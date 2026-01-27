@@ -56,7 +56,7 @@ async function loadArguments(topicId) {
     if (args && grid) {
         grid.innerHTML = '';
         args.forEach(arg => {
-            const typeClass = arg.arg_type === 'con' ? 'contra' : arg.arg_type; // fix для сумісності
+            const typeClass = arg.arg_type === 'con' ? 'contra' : arg.arg_type;
             
             const card = `
                 <div class="argument-card ${typeClass}">
