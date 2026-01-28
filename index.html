@@ -25,6 +25,7 @@
             padding: 0;
         }
 
+        /* --- Навігація --- */
         nav {
             padding: 1rem 2rem;
             background: rgba(30, 41, 59, 0.8);
@@ -35,24 +36,25 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
         }
 
         nav a {
             text-decoration: none;
             font-weight: bold;
-            transition: 0.3s;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        nav a:hover {
+            color: var(--accent) !important;
+            transform: translateY(-1px);
+        }
+
+        /* --- Шапка --- */
         header {
             padding: 4rem 2rem;
             text-align: center;
             background: linear-gradient(to bottom, #1e293b, #0f172a);
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
         }
 
         .logo {
@@ -61,11 +63,14 @@
             letter-spacing: -1px;
             color: var(--accent);
             margin-bottom: 10px;
+            animation: fadeInDown 0.8s ease-out;
         }
 
-        .tagline {
-            color: var(--text-muted);
-            font-size: 1.2rem;
+        /* --- Контейнер --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .topic-header {
@@ -74,8 +79,10 @@
             border-radius: 12px;
             border-left: 4px solid var(--accent);
             margin-bottom: 2rem;
+            animation: slideInLeft 0.6s ease-out;
         }
 
+        /* --- Картки та Грід --- */
         .debate-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -89,16 +96,72 @@
         .argument-card {
             background: var(--card-bg);
             padding: 1.5rem;
-            border-radius: 8px;
+            border-radius: 12px;
             border-top: 3px solid transparent;
-            animation: fadeIn 0.5s ease-in;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Ефект при наведенні на картку */
+        .argument-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            background: #24334a;
+        }
 
         .pro { border-color: var(--pro); }
         .contra { border-color: var(--contra); }
 
+        /* --- Кнопка з анімацією "дихання" --- */
+        .btn-action {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin-top: 2rem;
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px dashed var(--accent);
+            color: var(--accent);
+            cursor: pointer;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .btn-action:hover {
+            background: var(--accent);
+            color: var(--bg);
+            animation: none; /* зупиняємо пульсацію при наведенні */
+            transform: scale(1.02);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Анімації (Keyframes) --- */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Бейджі */
         .badge {
             font-size: 0.8rem;
             padding: 4px 8px;
@@ -111,21 +174,6 @@
 
         .badge-pro { background: rgba(34, 197, 94, 0.1); color: var(--pro); }
         .badge-contra { background: rgba(239, 68, 68, 0.1); color: var(--contra); }
-
-        .btn-action {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-top: 2rem;
-            background: transparent;
-            border: 1px dashed var(--accent);
-            color: var(--accent);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        .btn-action:hover { background: rgba(56, 189, 248, 0.1); }
 
         footer {
             text-align: center;
