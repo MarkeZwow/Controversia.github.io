@@ -89,7 +89,7 @@ async function voteArgument(argId, topicId) {
     }
 }
 
-// 4. Додавання ідеї (З автоматичним статусом та заголовком)
+// 4. Додавання ідеї (Змінюваний тип + автоматичні поля)
 async function addIdea(topicId) {
     const authorName = prompt("Введіть ваше ім'я:", "Гість");
     if (!authorName) return;
@@ -97,10 +97,11 @@ async function addIdea(topicId) {
     const text = prompt("Опишіть вашу ідею:");
     if (!text) return;
 
-    const typeInput = prompt("Тип аргументу (pro - за, contra - проти):", "pro");
+    // Користувач вибирає тип, але заголовок та статус ставляться самі
+    const typeInput = prompt("Виберіть тип (1 - ЗА, 2 - ПРОТИ):", "1");
     if (typeInput === null) return;
     
-    const safeType = (typeInput.toLowerCase() === 'contra' || typeInput.toLowerCase() === 'con') ? 'contra' : 'pro';
+    const safeType = (typeInput === "2" || typeInput.toLowerCase() === 'contra' || typeInput.toLowerCase() === 'con') ? 'contra' : 'pro';
 
     const { data, error } = await supabaseClient
         .from('arguments')
@@ -109,8 +110,8 @@ async function addIdea(topicId) {
                 topic_id: topicId, 
                 content: text, 
                 arg_type: safeType,
-                title: "Думка",           // Автоматичний заголовок
-                badge_text: "Користувач", // Автоматичний статус
+                title: "Думка",           // Автоматично
+                badge_text: "Користувач", // Автоматично
                 author_name: authorName
             }
         ]);
