@@ -20,17 +20,33 @@
             color: var(--text);
             line-height: 1.8;
             margin: 0;
+            scroll-behavior: smooth;
         }
 
+        /* Анімація появи всієї сторінки */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Навігація зі скляним ефектом */
         .nav {
             padding: 1rem 2rem;
-            background: rgba(30, 41, 59, 0.9);
+            background: rgba(15, 23, 42, 0.8);
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 25px;
             position: sticky;
             top: 0;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 100;
             border-bottom: 1px solid rgba(56, 189, 248, 0.1);
         }
@@ -40,22 +56,33 @@
             text-decoration: none;
             font-weight: bold;
             transition: 0.3s;
+            position: relative;
         }
 
         .nav a:hover, .nav a.active {
             color: var(--accent);
         }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        .nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
         }
 
-        h1 { color: var(--accent); font-size: 2.8rem; margin-bottom: 0.5rem; }
-        h2 { color: var(--accent); margin-top: 2.5rem; display: flex; align-items: center; }
-        
-        /* Декоративна лінія біля заголовків */
+        header h1 { 
+            color: var(--accent); 
+            font-size: 3rem; 
+            margin-bottom: 0.5rem; 
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        h2 { color: var(--accent); margin-top: 3rem; display: flex; align-items: center; }
         h2::after {
             content: "";
             flex: 1;
@@ -65,50 +92,106 @@
             opacity: 0.3;
         }
 
+        /* Блоки контенту */
         .mission-box {
             background: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 16px;
-            border-left: 4px solid var(--accent);
-            margin: 2rem 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            border-left: 5px solid var(--accent);
+            margin: 2.5rem 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            transition: 0.4s;
+        }
+
+        .mission-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 45px rgba(56, 189, 248, 0.1);
         }
 
         .feature-item {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding: 1.5rem;
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: 0.3s ease;
         }
 
+        .feature-item:hover {
+            background: rgba(56, 189, 248, 0.05);
+            border-color: var(--accent);
+            transform: translateX(12px);
+        }
+
+        /* AI Секція з ефектами */
         .ai-section {
-            background: linear-gradient(135deg, var(--card-bg) 0%, #1e1b4b 100%);
-            padding: 2rem;
-            border-radius: 16px;
-            border: 1px solid var(--accent);
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
             position: relative;
             overflow: hidden;
+            margin-top: 2rem;
         }
 
         .ai-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 650px) {
+            .ai-grid { grid-template-columns: 1fr; }
         }
 
         .ai-tag {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            padding: 18px;
+            border-radius: 12px;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-tag strong { 
+            color: var(--accent); 
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 1.1rem;
+        }
+
+        .ai-tag:hover {
             background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         .tagline { color: var(--text-muted); font-size: 1.3rem; font-weight: 300; }
         strong { color: var(--accent); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 3rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+            text-shadow: 0 0 15px var(--accent);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 4rem 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -119,7 +202,7 @@
 </nav>
 
 <div class="container">
-    <header style="text-align: center; margin-bottom: 3rem;">
+    <header style="text-align: center; margin-bottom: 4rem;">
         <h1>CONTROVERSIA</h1>
         <p class="tagline">Відкриті питання науки та суспільства</p>
     </header>
@@ -129,7 +212,7 @@
         <p>У світі інформаційного шуму <strong>Controversia</strong> стає фільтром для чистих ідей. Ми фокусуємося на "відкритих питаннях" — фундаментальних проблемах науки та суспільства, де істина ще не зафіксована. Наша мета — перетворити деструктивні суперечки на структурований конструктор, де кожна думка має своє логічне місце.</p>
     </div>
 
-   <h2>Як це працює?</h2>
+    <h2>Як це працює?</h2>
     
     <div class="feature-item">
         <strong>Структурований конструктор:</strong> Навколо кожного "відкритого питання" формується поле інтелектуальної битви. Ви не просто пишете коментар, а додаєте повноцінний елемент конструктора — гіпотезу, доказ або контраргумент.
@@ -148,18 +231,31 @@
 
     <div class="ai-section">
         <div class="ai-grid">
-            <div class="ai-tag"><strong>Logical Validator:</strong> Автоматична перевірка аргументів на логічні помилки (ad hominem, софізми тощо).</div>
-            <div class="ai-tag"><strong>Bias Detector:</strong> Виявлення прихованих когнітивних упереджень у текстах гіпотез.</div>
-            <div class="ai-tag"><strong>Synthesis Engine:</strong> ШІ-інструмент для пошуку точок дотику між протилежними теоріями.</div>
-            <div class="ai-tag"><strong>Source Verifier:</strong> Автоматичний пошук першоджерел та перевірка наукової бази доводів.</div>
+            <div class="ai-tag">
+                <strong>Logical Validator</strong>
+                Автоматична перевірка аргументів на логічні помилки (ad hominem, софізми тощо).
+            </div>
+            <div class="ai-tag">
+                <strong>Bias Detector</strong>
+                Виявлення прихованих когнітивних упереджень у текстах гіпотез.
+            </div>
+            <div class="ai-tag">
+                <strong>Synthesis Engine</strong>
+                ШІ-інструмент для пошуку точок дотику між протилежними теоріями.
+            </div>
+            <div class="ai-tag">
+                <strong>Source Verifier</strong>
+                Автоматичний пошук першоджерел та перевірка наукової бази доводів.
+            </div>
         </div>
     </div>
 
-    <a href="index.html" style="display: inline-block; margin-top: 2rem; color: var(--accent); text-decoration: none; font-weight: bold;">← Повернутися на головну</a>
+    <a href="index.html" class="back-link">← Повернутися на головну</a>
 
-<footer>
-    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">&copy; 2026 Controversia.</p>
-</footer>
+    <footer>
+        <p>&copy; 2026 Controversia. Проєкт зимової школи DES 2026</p>
+    </footer>
+</div>
 
 </body>
 </html>
