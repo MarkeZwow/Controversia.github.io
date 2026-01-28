@@ -1,53 +1,40 @@
 const SUPABASE_URL = 'https://noawhiwgihrcqygsmjed.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vYXdoaXdnaWhyY3F5Z3NtamVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxOTkzMzUsImV4cCI6MjA4NDc3NTMzNX0.MPeLwmSh5Vx12J470W_tbojh5JoUJIhSa0V-Q_a20ow';
 
-// Створюємо клієнт (перевіряємо чи бібліотека завантажена)
-const supabaseClient = typeof supabase !== 'undefined' 
-    ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
-    : null;
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentTopicId = null;
-let selectedType = 'pro';
-
-// 1. Завантаження тем
+// 1. Завантаження тем (Topic)
 async function loadContent() {
     const container = document.getElementById('main-container');
-    if (!container) return;
-    
-    container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Завантаження дискусій...</p>';
+    container.innerHTML = '<p style="text-align:center;">Завантаження дискусій...</p>';
 
-    const { data: topics, error: tError } = await supabaseClient
+    const { data: topics, error } = await supabaseClient
         .from('topics')
         .select('*')
         .eq('status', 'active')
         .order('id', { ascending: true });
 
-    if (tError) {
-        console.error('Помилка тем:', tError);
-        container.innerHTML = '<p style="text-align:center; color: var(--contra);">Помилка завантаження.</p>';
+    if (error) {
+        container.innerHTML = '<p style="color:red;">Помилка підключення до бази.</p>';
         return;
     }
 
     container.innerHTML = ''; 
 
     for (const topic of topics) {
-        const topicBlock = document.createElement('div');
-        topicBlock.className = 'topic-block';
-        topicBlock.style.marginBottom = '4rem'; 
-
-        topicBlock.innerHTML = `
+        const div = document.createElement('div');
+        div.innerHTML = `
             <div class="topic-header">
-                <span style="color: var(--accent); font-weight: bold;">Тема #${topic.id} | ${topic.category || 'Загальне'}</span>
-                <h2 style="margin: 10px 0;">${topic.title}</h2>
+                <small style="color: var(--accent);">ТЕМА #${topic.id}</small>
+                <h2>${topic.title}</h2>
                 <p style="color: var(--text-muted);">${topic.description}</p>
             </div>
             <div class="debate-grid" id="grid-${topic.id}"></div>
             <button class="btn-action" onclick="addIdea(${topic.id})">
-                + Додати свій внесок у дискусію
+                + Додати свою думку
             </button>
         `;
-        
-        container.appendChild(topicBlock);
+        container.appendChild(div);
         await loadArguments(topic.id);
     }
 }
@@ -61,87 +48,67 @@ async function loadArguments(topicId) {
         .order('reputation', { ascending: false });
 
     const grid = document.getElementById(`grid-${topicId}`);
-    
-    if (args && grid) {
-        grid.innerHTML = '';
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (args) {
         args.forEach(arg => {
-            const typeClass = arg.arg_type === 'con' || arg.arg_type === 'contra' ? 'contra' : 'pro';
-            
+            const isContra = (arg.arg_type === 'contra' || arg.arg_type === 'con');
+            const typeClass = isContra ? 'contra' : 'pro';
+            const badgeLabel = isContra ? 'Заперечення' : 'Підтримка';
+
             grid.innerHTML += `
                 <div class="argument-card ${typeClass}">
-                    <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 15px;">
-                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
-                        <span style="cursor:pointer; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 20px;" onclick="voteArgument(${arg.id}, ${topicId})">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Користувач'}</span>
+                        <span style="cursor:pointer;" onclick="voteArgument(${arg.id}, ${topicId})">
                             👍 <b>${arg.reputation}</b>
                         </span>
                     </div>
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">${arg.title || 'Нова ідея'}</h3>
-                    <p style="font-size: 0.95rem; margin-bottom: 15px;">${arg.content}</p>
-                    <small style="color: var(--text-muted); font-style: italic;">— ${arg.author_name}</small>
+                    <h4 style="margin:5px 0; color:var(--accent);">${arg.title || 'Думка'}</h4>
+                    <p style="font-size:0.9rem;">${arg.content}</p>
+                    <small style="color:var(--text-muted);">— ${arg.author_name || 'Гість'}</small>
                 </div>
             `;
         });
     }
 }
 
-// 3. Функції модалки (прив'язуємо до window для надійності)
-window.addIdea = function(topicId) {
-    currentTopicId = topicId;
-    document.getElementById('modal').style.display = 'flex';
-}
+// 3. Додавання ідеї (АВТОМАТИЧНІ ПОЛЯ)
+async function addIdea(topicId) {
+    // Користувач вводить лише суть
+    const text = prompt("Ваша ідея або аргумент:");
+    if (!text) return;
 
-window.closeModal = function() {
-    document.getElementById('modal').style.display = 'none';
-}
+    const typeInput = prompt("Тип: 'pro' (підтримую) або 'contra' (заперечую):", "pro");
+    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
 
-window.setType = function(type) {
-    selectedType = type;
-    document.getElementById('btn-pro').classList.toggle('active', type === 'pro');
-    document.getElementById('btn-contra').classList.toggle('active', type === 'contra');
-}
-
-window.submitIdea = async function() {
-    const author = document.getElementById('modal-author').value || "Гість";
-    const title = document.getElementById('modal-title').value || "Гіпотеза";
-    const badge = document.getElementById('modal-badge').value || "Учасник";
-    const text = document.getElementById('modal-content').value;
-
-    if (!text) {
-        alert("Будь ласка, введіть текст аргументу!");
-        return;
-    }
-
+    // Всі інші дані заповнюються автоматично
     const { error } = await supabaseClient
         .from('arguments')
         .insert([{ 
-            topic_id: currentTopicId, 
+            topic_id: topicId, 
             content: text, 
-            arg_type: selectedType,
-            title: title, 
-            badge_text: badge,
-            author_name: author
+            arg_type: safeType,
+            title: "Думка",            // Автозаповнення
+            badge_text: "Користувач",   // Автозаповнення
+            author_name: "Гість"        // Автозаповнення
         }]);
 
     if (error) {
-        alert("Помилка збереження: " + error.message);
+        alert("Помилка: " + error.message);
     } else {
-        window.closeModal();
-        loadArguments(currentTopicId);
-        document.getElementById('modal-content').value = '';
+        loadArguments(topicId);
     }
 }
 
-window.voteArgument = async function(argId, topicId) {
+// 4. Голосування
+async function voteArgument(argId, topicId) {
     const { error } = await supabaseClient.rpc('vote_for_argument', { arg_id: argId });
-    if (error) alert("Помилка: " + error.message);
-    else loadArguments(topicId);
-}
-
-// ЗАПУСК ПІСЛЯ ЗАВАНТАЖЕННЯ СТОРІНКИ
-document.addEventListener('DOMContentLoaded', () => {
-    if (supabaseClient) {
-        loadContent();
+    if (error) {
+        console.error(error);
     } else {
-        console.error("Бібліотека Supabase не завантажена!");
+        loadArguments(topicId);
     }
-});
+}
+loadContent();
