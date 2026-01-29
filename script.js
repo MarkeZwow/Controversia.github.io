@@ -33,9 +33,6 @@ async function loadContent() {
                 <h2 style="margin: 10px 0;">${topic.title}</h2>
                 <p style="color: var(--text-muted);">${topic.description}</p>
             </div>
-            
-            <div id="ai-summary-${topic.id}" style="margin-bottom: 25px;"></div>
-
             <div class="debate-grid" id="grid-${topic.id}"></div>
             <button class="btn-action" onclick="addIdea(${topic.id})">
                 + Додати свій внесок у дискусію
@@ -43,45 +40,11 @@ async function loadContent() {
         `;
         
         container.appendChild(topicBlock);
-        
-        // Вантажимо і аргументи, і ШІ
-        loadArguments(topic.id);
-        loadAiSummary(topic.id);
+        await loadArguments(topic.id);
     }
 }
 
-// 2. ФУНКЦІЯ ШІ
-async function loadAiSummary(topicId) {
-    // Увага: тут ми читаємо summary_text, як у тебе в базі
-    const { data, error } = await supabaseClient
-        .from('ai_summaries')
-        .select('summary_text')  
-        .eq('topic_id', topicId)
-        .maybeSingle();
-
-    const aiContainer = document.getElementById(`ai-summary-${topicId}`);
-    
-    if (data && data.summary_text) {
-        aiContainer.innerHTML = `
-            <div style="
-                background: linear-gradient(90deg, rgba(56, 189, 248, 0.05), rgba(30, 41, 59, 0.5)); 
-                border-left: 4px solid var(--accent);
-                padding: 20px; 
-                border-radius: 0 12px 12px 0;
-                animation: fadeInDown 1s ease-out;
-            ">
-                <h4 style="margin: 0 0 10px 0; color: var(--accent); display: flex; align-items: center; gap: 10px; font-size: 1.1rem;">
-                    🤖 Вердикт AI-аналітика
-                </h4>
-                <p style="margin: 0; font-style: italic; color: #e2e8f0; line-height: 1.6;">
-                    "${data.summary_text}"
-                </p>
-            </div>
-        `;
-    }
-}
-
-// 3. Завантаження аргументів
+// 2. Завантаження аргументів
 async function loadArguments(topicId) {
     const { data: args, error } = await supabaseClient
         .from('arguments')
@@ -114,7 +77,7 @@ async function loadArguments(topicId) {
     }
 }
 
-// 4. Голосування 
+// 3. Голосування
 async function voteArgument(argId, topicId) {
     const { data, error } = await supabaseClient
         .rpc('vote_for_argument', { arg_id: argId });
@@ -126,7 +89,7 @@ async function voteArgument(argId, topicId) {
     }
 }
 
-// 5. Додавання ідеї
+// 4. Додавання ідеї (Змінюваний тип + автоматичні поля)
 async function addIdea(topicId) {
     const authorName = prompt("Введіть ваше ім'я:", "Гість");
     if (!authorName) return;
@@ -134,6 +97,7 @@ async function addIdea(topicId) {
     const text = prompt("Опишіть вашу ідею:");
     if (!text) return;
 
+    // Користувач вибирає тип, але заголовок та статус ставляться самі
     const typeInput = prompt("Виберіть тип (1 - ЗА, 2 - ПРОТИ):", "1");
     if (typeInput === null) return;
     
@@ -146,8 +110,8 @@ async function addIdea(topicId) {
                 topic_id: topicId, 
                 content: text, 
                 arg_type: safeType,
-                title: "Думка",
-                badge_text: "Користувач",
+                title: "Думка",           // Автоматично
+                badge_text: "Користувач", // Автоматично
                 author_name: authorName
             }
         ]);
@@ -155,6 +119,7 @@ async function addIdea(topicId) {
     if (error) {
         alert("Не вдалося зберегти: " + error.message);
     } else {
+        alert("Успішно додано!");
         loadArguments(topicId); 
     }
 }
