@@ -52,6 +52,7 @@ async function loadContent() {
 
 // 2. ФУНКЦІЯ ШІ
 async function loadAiSummary(topicId) {
+    // Увага: тут ми читаємо summary_text, як у тебе в базі
     const { data, error } = await supabaseClient
         .from('ai_summaries')
         .select('summary_text')  
@@ -113,7 +114,7 @@ async function loadArguments(topicId) {
     }
 }
 
-// 4. Голосування
+// 4. Голосування 
 async function voteArgument(argId, topicId) {
     const { data, error } = await supabaseClient
         .rpc('vote_for_argument', { arg_id: argId });
@@ -144,4 +145,18 @@ async function addIdea(topicId) {
             { 
                 topic_id: topicId, 
                 content: text, 
-                arg_type: safe
+                arg_type: safeType,
+                title: "Думка",
+                badge_text: "Користувач",
+                author_name: authorName
+            }
+        ]);
+
+    if (error) {
+        alert("Не вдалося зберегти: " + error.message);
+    } else {
+        loadArguments(topicId); 
+    }
+}
+
+loadContent();
