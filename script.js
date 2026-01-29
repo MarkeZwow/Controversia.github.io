@@ -44,7 +44,6 @@ async function loadContent() {
         
         container.appendChild(topicBlock);
         
-        // Вантажимо і аргументи, і ШІ
         loadArguments(topic.id);
         loadAiSummary(topic.id);
     }
@@ -52,7 +51,6 @@ async function loadContent() {
 
 // 2. ФУНКЦІЯ ШІ
 async function loadAiSummary(topicId) {
-    // Увага: тут ми читаємо summary_text, як у тебе в базі
     const { data, error } = await supabaseClient
         .from('ai_summaries')
         .select('summary_text')  
@@ -96,13 +94,24 @@ async function loadArguments(topicId) {
         args.forEach(arg => {
             const typeClass = arg.arg_type === 'con' || arg.arg_type === 'contra' ? 'contra' : 'pro';
             
+            // Визначаємо колір рейтингу: зелений, якщо > 0, червоний, якщо < 0
+            let repColor = '#94a3b8'; // сірий за замовчуванням
+            if (arg.reputation > 0) repColor = '#22c55e'; // зелений
+            if (arg.reputation < 0) repColor = '#ef4444'; // червоний
+
             const card = `
                 <div class="argument-card ${typeClass}">
                     <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 15px;">
                         <span class="badge badge-${typeClass}">${arg.badge_text || 'Користувач'}</span>
-                        <span style="cursor:pointer; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 20px;" onclick="voteArgument(${arg.id}, ${topicId})">
-                            👍 <b>${arg.reputation}</b>
-                        </span>
+                        
+                        <div style="display:flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px;">
+                            <span style="cursor:pointer; font-size: 1.2rem; transition: 0.2s;" onclick="voteArgument(${arg.id}, ${topicId})" title="Лайк">👍</span>
+                            
+                            <b style="color: ${repColor}; min-width: 20px; text-align: center;">${arg.reputation}</b>
+                            
+                            <span style="cursor:pointer; font-size: 1.2rem; transition: 0.2s;" onclick="downvoteArgument(${arg.id}, ${topicId})" title="Дизлайк">👎</span>
+                        </div>
+
                     </div>
                     <h3 style="margin: 0 0 10px 0; color: var(--accent);">${arg.title || 'Думка'}</h3>
                     <p style="font-size: 0.95rem; margin-bottom: 15px;">${arg.content}</p>
@@ -114,7 +123,7 @@ async function loadArguments(topicId) {
     }
 }
 
-// 4. Голосування (Код Марка)
+// 4. Лайк
 async function voteArgument(argId, topicId) {
     const { data, error } = await supabaseClient
         .rpc('vote_for_argument', { arg_id: argId });
@@ -126,7 +135,19 @@ async function voteArgument(argId, topicId) {
     }
 }
 
-// 5. Додавання ідеї
+// 5. Дизлайк 
+async function downvoteArgument(argId, topicId) {
+    const { data, error } = await supabaseClient
+        .rpc('downvote_argument', { arg_id: argId });
+
+    if (error) {
+        alert("Помилка: " + error.message);
+    } else {
+        loadArguments(topicId);
+    }
+}
+
+// 6. Додавання ідеї
 async function addIdea(topicId) {
     const authorName = prompt("Введіть ваше ім'я:", "Гість");
     if (!authorName) return;
